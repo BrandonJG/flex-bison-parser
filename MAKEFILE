@@ -1,0 +1,13 @@
+all: sintactico
+
+sintactico.tab.c sintactico.tab.h:	sintactico.y
+	bison -t -v -d sintactico.y
+
+lex.yy.c: sintactico.l sintactico.tab.h
+	flex sintactico.l
+
+sintactico: lex.yy.c sintactico.tab.c sintactico.tab.h
+	gcc -o sintactico sintactico.tab.c lex.yy.c
+
+clean:
+	rm sintactico sintactico.tab.c lex.yy.c sintactico.tab.h sintactico.output
