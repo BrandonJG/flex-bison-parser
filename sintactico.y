@@ -37,6 +37,7 @@ expresiones
 		: 
 		| definicion
 		| declaracion
+		;
 
 especificador_tipo
 		: T_WINT
