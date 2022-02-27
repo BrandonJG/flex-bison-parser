@@ -30,6 +30,7 @@ ID [a-zA-Z][a-zA-Z0-9_]+
 "&&"        {return T_AND;}
 "["         {return T_IBRAK;}
 "]"         {return T_DBRAK;}
+"!="        {return T_DISTINTO}
 "=="        {return T_IGUALQ;}
 "<="        {return T_MENORIGUAL;}
 ">="        {return T_MAYORIGUAL;}
