@@ -40,10 +40,10 @@ ID [a-zA-Z][a-zA-Z0-9_]+
 "-"         {return T_MENOS;}
 "*"         {return T_MULTI;}
 "/"         {return T_DIVI;}
-"("         {return T_IZQ;}
-")"         {return T_DERE;}
+"("         {return T_IPARE;}
+")"         {return T_DPARE;}
 "int"       {return T_WINT;}
-"float"     {return T_WINT;}
+"float"     {return T_WFLOAT;}
 "char"      {return T_WCHAR;}
 "string"    {return T_WSTRING;}
 "void"      {return T_WVOID;}
