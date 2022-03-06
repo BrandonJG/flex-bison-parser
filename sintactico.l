@@ -23,13 +23,12 @@ ID [a-zA-Z][a-zA-Z0-9_]+
 {CADENA}    {return T_CADENA;}
 \n          {return T_NEWLINE;}
 ";"         {return T_PCOMA;}
+"."         {return T_PUNTO;}
 ","         {return T_COMA;}
 "{"         {return T_IBRAC;}
 "}"         {return T_DBRAC;}
 "||"        {return T_OR;}
 "&&"        {return T_AND;}
-"["         {return T_IBRAK;}
-"]"         {return T_DBRAK;}
 "!="        {return T_DISTINTO}
 "=="        {return T_IGUALQ;}
 "<="        {return T_MENORIGUAL;}
@@ -41,8 +40,11 @@ ID [a-zA-Z][a-zA-Z0-9_]+
 "-"         {return T_MENOS;}
 "*"         {return T_MULTI;}
 "/"         {return T_DIVI;}
+"&"         {return T_AMP;}
 "("         {return T_IPARE;}
 ")"         {return T_DPARE;}
+"~"         {return T_TILDE;}
+"!"         {return T_EXCLA;}
 "int"       {return T_WINT;}
 "float"     {return T_WFLOAT;}
 "char"      {return T_WCHAR;}
@@ -52,7 +54,11 @@ ID [a-zA-Z][a-zA-Z0-9_]+
 "else"      {return T_ELSE;}
 "return"    {return T_RETURN;}
 "while"     {return T_WHILE;}
+"true"      {return T_TRUE;}
+"false"     {return T_FALSE;}
+"function"  {return T_FUNC;}
 
+"main"      {return T_MAIN;}
 "exit"      {return T_QUIT;}
 "quit"      {return T_QUIT;}
 
