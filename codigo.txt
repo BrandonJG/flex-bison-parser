@@ -1,0 +1,3 @@
+int abc;
+char abd;
+float num;

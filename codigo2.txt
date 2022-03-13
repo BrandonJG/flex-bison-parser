@@ -1,0 +1,6 @@
+float echo;
+if( echo < ){
+    echo = 23;
+} else {
+    echo = 2;
+};

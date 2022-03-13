@@ -179,19 +179,21 @@ operador_logico
 int main() {
     char nombreArchivo[30], c;
 	FILE* fl;
-	printf("Juarez Gonzalez Brandon Jesus - 218292556");
-	printf("Analizador Sintactico\nIngresar nombre de archivo a analizar");
+	printf("Juarez Gonzalez Brandon Jesus - 218292556\n");
+	printf("Analizador Sintactico\nNombre de archivo a analizar: ");
 	scanf("%s", nombreArchivo);
 	fl = fopen(nombreArchivo,"r");
 	yyin = fopen(nombreArchivo,"r");
         if(yyin)
         {
+            printf("----------\n");
             c = fgetc(fl);
 			while(c != EOF){
 				printf("%c", c);
 				c = fgetc(fl);
 			}
 			fclose(fl);
+            printf("\n----------\n");
 			yyparse();
             printf("Analisis sintactico correcto!\n");
         }

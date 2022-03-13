@@ -1,0 +1,5 @@
+if(true){
+    float number;
+} else {
+    float echo23;
+};
