@@ -21,16 +21,14 @@ void yyerror(const char* s);
 %token<fval> T_FLOAT
 %token T_CHAR
 %token T_CADENA
-%token T_PCOMA T_COMA T_PUNTO
+%token T_PCOMA
 %token T_IBRAC T_DBRAC T_IPARE T_DPARE
 %token T_OR T_AND
 %token T_IGUALQ T_MENORIGUAL T_MAYORIGUAL T_MENORQ T_MAYORQ T_DISTINTO
 %token T_MAS T_MENOS T_MULTI T_DIVI T_ASIGN
-%token T_EXCLA T_TILDE T_AMP
 %token T_WINT T_WFLOAT T_WCHAR T_WSTRING T_WVOID
 %token T_IF T_ELSE T_WHILE T_TRUE T_FALSE T_FUNC
 %token T_ID
-%token T_QUIT T_MAIN T_ERROR
 
 %left T_COMA
 %right T_ASIGN
@@ -179,15 +177,26 @@ operador_logico
 %%
 
 int main() {
-        //CAMBIAR PARA LEER DE ARCHIVO?
-	yyin = fopen("q4.txt","r");
+    char nombreArchivo[30], c;
+	FILE* fl;
+	printf("Juarez Gonzalez Brandon Jesus - 218292556");
+	printf("Analizador Sintactico\nIngresar nombre de archivo a analizar");
+	scanf("%s", nombreArchivo);
+	fl = fopen(nombreArchivo,"r");
+	yyin = fopen(nombreArchivo,"r");
         if(yyin)
         {
-                yyparse();
-                printf("Analisis sintactico correcto!\n");
+            c = fgetc(fl);
+			while(c != EOF){
+				printf("%c", c);
+				c = fgetc(fl);
+			}
+			fclose(fl);
+			yyparse();
+            printf("Analisis sintactico correcto!\n");
         }
         else{
-                printf("Error al abrir el archivo");
+            printf("Error al abrir el archivo");
         }
 	return 0;
 }
