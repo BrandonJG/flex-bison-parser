@@ -3,7 +3,10 @@ Analizador sintactico
 
 Para Compilar
 
-    $ bison -d calc.y
-    $ flex calc.l
-    $ gcc calc.tab.c lex.yy.c -o calc -lm
-    $ ./calc
+    $ bison -d sintactico.y
+    $ flex sintactico.l
+    $ gcc sintactico.tab.c lex.yy.c -o sintactico -lm
+    
+Para ejecutar
+
+    $ ./sintactico
