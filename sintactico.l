@@ -57,15 +57,22 @@ ID [a-zA-Z][a-zA-Z0-9_]*
 
 {ID}        {
                 Simbolo *buscado = buscar(&lista, yytext);
-                if(buscado == NULL){
-                    Simbolo simbolo;
-                    strcpy(simbolo.nombre, yytext);
-                    simbolo.flag = ultimoTipoDato;
-                    ultimoTipoDato = -1;
-                    insertar(&lista, &simbolo);
+                if(ultimoTipoDato != -1){
+                    if(buscado == NULL){
+                        Simbolo simbolo;
+                        strcpy(simbolo.nombre, yytext);
+                        simbolo.flag = ultimoTipoDato;
+                        ultimoTipoDato = -1;
+                        insertar(&lista, &simbolo);
+                        strcpy(yylval.string, yytext);
+                        return T_ID;
+                    }
+                } else {
+                    if(buscado == NULL){
+                        printf("%s: Variable no declarada.\n", yytext);
+                    }
                 }
-                strcpy(yylval.string, yytext);
-                return T_ID;}
+            }
 .           {showError();}
 
 %%

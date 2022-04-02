@@ -623,7 +623,7 @@ static const char *const yytname[] =
   "sentencia", "comparacion", "condiciones", "condicion", "ciclo",
   "expresion_condicional", "condicional_extendida", "entrada_dato",
   "salida_dato", "expresion_matematica_compuesta",
-  "expresion_matematica_simple", "tipo_de_dato", "dato",
+  "expresion_matematica_simple", "tipo_de_dato", "termino",
   "constante_numerica", "constante_literal", "declaracion_dato",
   "definicion", "operador_relacional", "operador_logico", YY_NULLPTR
 };
@@ -1832,6 +1832,11 @@ yyreturn:
 }
 #line 197 "sintactico.y"
 
+
+Simbolo *obtenerSimbolo(char* simbolo){
+    Simbolo* buscado = buscar(&lista, simbolo);
+    return buscado;
+}
 
 int main() {
     char nombreArchivo[30], c;

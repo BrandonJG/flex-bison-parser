@@ -75,7 +75,7 @@ sentencia
         ;
 
 comparacion
-        : dato operador_relacional dato
+        : termino operador_relacional termino
         ;
 
 condiciones
@@ -145,7 +145,7 @@ tipo_de_dato
         | T_WSTRING
         ;
 
-dato
+termino
         : constante_numerica
         | constante_literal
         | T_ID
@@ -195,6 +195,11 @@ operador_logico
         ;
 
 %%
+
+Simbolo *obtenerSimbolo(char* simbolo){
+    Simbolo* buscado = buscar(&lista, simbolo);
+    return buscado;
+}
 
 int main() {
     char nombreArchivo[30], c;

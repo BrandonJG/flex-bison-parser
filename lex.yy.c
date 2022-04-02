@@ -978,27 +978,34 @@ YY_RULE_SETUP
 #line 58 "sintactico.l"
 {
                 Simbolo *buscado = buscar(&lista, yytext);
-                if(buscado == NULL){
-                    Simbolo simbolo;
-                    strcpy(simbolo.nombre, yytext);
-                    simbolo.flag = ultimoTipoDato;
-                    ultimoTipoDato = -1;
-                    insertar(&lista, &simbolo);
+                if(ultimoTipoDato != -1){
+                    if(buscado == NULL){
+                        Simbolo simbolo;
+                        strcpy(simbolo.nombre, yytext);
+                        simbolo.flag = ultimoTipoDato;
+                        ultimoTipoDato = -1;
+                        insertar(&lista, &simbolo);
+                        strcpy(yylval.string, yytext);
+                        return T_ID;
+                    }
+                } else {
+                    if(buscado == NULL){
+                        printf("%s: Variable no declarada.\n", yytext);
+                    }
                 }
-                strcpy(yylval.string, yytext);
-                return T_ID;}
+            }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 69 "sintactico.l"
+#line 76 "sintactico.l"
 {showError();}
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 71 "sintactico.l"
+#line 78 "sintactico.l"
 ECHO;
 	YY_BREAK
-#line 1002 "lex.yy.c"
+#line 1009 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2003,7 +2010,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 71 "sintactico.l"
+#line 78 "sintactico.l"
 
 
 void showError(){
