@@ -2,7 +2,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "tabla.h"
 
+extern Lista lista;
 extern int yylex();
 extern int yyparse();
 extern FILE* yyin;
@@ -15,19 +17,22 @@ void yyerror(const char* s);
 %union {
         int ival;
         float fval;
+        char cval;
+        char string[100];
+        Simbolo simbolo;
 }
 
 %token<ival> T_INT
 %token<fval> T_FLOAT
-%token T_CHAR
-%token T_CADENA
+%token<cval> T_CHAR
+%token<string> T_CADENA
 %token T_PCOMA
 %token T_IBRAC T_DBRAC T_IPARE T_DPARE
 %token T_OR T_AND
 %token T_IGUALQ T_MENORIGUAL T_MAYORIGUAL T_MENORQ T_MAYORQ T_DISTINTO
 %token T_MAS T_MENOS T_MULTI T_DIVI T_ASIGN
 %token T_WINT T_WFLOAT T_WCHAR T_WSTRING T_WVOID
-%token T_IF T_ELSE T_WHILE T_TRUE T_FALSE T_FUNC
+%token T_IF T_ELSE T_WHILE T_TRUE T_FALSE T_PRINT T_SCAN T_FUNC
 %token T_ID
 
 %left T_COMA
@@ -39,6 +44,9 @@ void yyerror(const char* s);
 %left T_MAS T_MENOS
 %left T_MULTI T_DIVI
 %left T_IPARE
+
+%type<ival> expresion_matematica_simple
+%type<fval> expresion_matematica_compuesta
 
 %start programa
 
@@ -62,6 +70,8 @@ sentencia
         | definicion
         | expresion_condicional
         | ciclo
+        | entrada_dato
+        | salida_dato
         ;
 
 comparacion
@@ -93,31 +103,39 @@ condicional_extendida
         | T_ELSE T_IF condicion bloque condicional_extendida
         ;
 
+entrada_dato
+        : T_SCAN T_IPARE tipo_de_dato T_COMA T_ID T_DPARE
+        ;
+
+salida_dato
+        : T_PRINT T_IPARE tipo_de_dato T_COMA T_ID T_DPARE
+        ;
+
 expresion_matematica_compuesta
-        : T_FLOAT
-        | expresion_matematica_compuesta T_MAS expresion_matematica_compuesta
-        | expresion_matematica_compuesta T_MENOS expresion_matematica_compuesta
-        | expresion_matematica_compuesta T_MULTI expresion_matematica_compuesta
-        | expresion_matematica_compuesta T_DIVI expresion_matematica_compuesta
-        | T_IPARE expresion_matematica_compuesta T_DPARE		 
-        | expresion_matematica_simple T_MAS expresion_matematica_compuesta
-        | expresion_matematica_simple T_MENOS expresion_matematica_compuesta
-        | expresion_matematica_simple T_MULTI expresion_matematica_compuesta
-        | expresion_matematica_simple T_DIVI expresion_matematica_compuesta
-        | expresion_matematica_compuesta T_MAS expresion_matematica_simple
-        | expresion_matematica_compuesta T_MENOS expresion_matematica_simple
-        | expresion_matematica_compuesta T_MULTI expresion_matematica_simple
-        | expresion_matematica_compuesta T_DIVI expresion_matematica_simple
-        | expresion_matematica_simple T_DIVI expresion_matematica_simple
+        : T_FLOAT { $$ = $1; }
+        | expresion_matematica_compuesta T_MAS expresion_matematica_compuesta { $$ = $1 + $3; }
+        | expresion_matematica_compuesta T_MENOS expresion_matematica_compuesta { $$ = $1 - $3; }
+        | expresion_matematica_compuesta T_MULTI expresion_matematica_compuesta { $$ = $1 * $3; }
+        | expresion_matematica_compuesta T_DIVI expresion_matematica_compuesta { $$ = $1 / $3; }
+        | T_IPARE expresion_matematica_compuesta T_DPARE { $$ = $2; }
+        | expresion_matematica_simple T_MAS expresion_matematica_compuesta { $$ = $1 + $3; }
+        | expresion_matematica_simple T_MENOS expresion_matematica_compuesta { $$ = $1 - $3; }
+        | expresion_matematica_simple T_MULTI expresion_matematica_compuesta { $$ = $1 * $3; }
+        | expresion_matematica_simple T_DIVI expresion_matematica_compuesta { $$ = $1 / $3; }
+        | expresion_matematica_compuesta T_MAS expresion_matematica_simple { $$ = $1 + $3; }
+        | expresion_matematica_compuesta T_MENOS expresion_matematica_simple { $$ = $1 - $3; }
+        | expresion_matematica_compuesta T_MULTI expresion_matematica_simple { $$ = $1 * $3; }
+        | expresion_matematica_compuesta T_DIVI expresion_matematica_simple { $$ = $1 / $3; }
+        | expresion_matematica_simple T_DIVI expresion_matematica_simple { $$ = $1 / (float)$3; }
         ; 
 
 
 expresion_matematica_simple
-        : T_INT
-        | expresion_matematica_simple T_MAS expresion_matematica_simple
-        | expresion_matematica_simple T_MENOS expresion_matematica_simple
-        | expresion_matematica_simple T_MULTI expresion_matematica_simple
-        | T_IPARE expresion_matematica_simple T_DPARE
+        : T_INT { $$ = $1; }
+        | expresion_matematica_simple T_MAS expresion_matematica_simple { $$ = $1 + $3; }
+        | expresion_matematica_simple T_MENOS expresion_matematica_simple { $$ = $1 - $3; }
+        | expresion_matematica_simple T_MULTI expresion_matematica_simple { $$ = $1 * $3; }
+        | T_IPARE expresion_matematica_simple T_DPARE { $$ = $2; }
         ;
 
 tipo_de_dato
@@ -144,16 +162,18 @@ constante_literal
         ;        
 
 declaracion_dato
-        : tipo_de_dato definicion
+        : T_WINT T_ID
+        | T_WFLOAT T_ID
+        | T_WCHAR T_ID
+        | T_WSTRING T_ID
         ;
 
 definicion
         : 
-        | asignacion expresion_matematica_simple
-        | asignacion expresion_matematica_compuesta
-        | asignacion constante_literal
-        | asignacion T_ID;
-        | T_ID
+        | T_ID T_ASIGN expresion_matematica_simple
+        | T_ID T_ASIGN expresion_matematica_compuesta
+        | T_ID T_ASIGN constante_literal
+        | T_ID T_ASIGN T_ID;
         ;
 
 asignacion
@@ -196,6 +216,7 @@ int main() {
             printf("\n----------\n");
 			yyparse();
             printf("Analisis sintactico correcto!\n");
+            imprimirLista(&lista);
         }
         else{
             printf("Error al abrir el archivo");

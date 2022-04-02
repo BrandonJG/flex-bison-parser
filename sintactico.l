@@ -3,13 +3,13 @@
 %{
 #include <stdio.h>
 #include <string.h>
+#include "tabla.h"
+#include "y.tab.h"
 #define YY_DECL int yylex()
 
-#include "sintactico.tab.h"
-
-int nwords = 0;
 void showError();
-
+int ultimoTipoDato = -1;
+Lista lista = {NULL, 0};
 %}
 
 CARAC \'[^\n']\'
@@ -19,51 +19,54 @@ ID [a-zA-Z][a-zA-Z0-9_]*
 %%
 
 [ \t\n]+	; // ignore all whitespace
-[0-9]+\.[0-9]+  {nwords++; yylval.fval = atof(yytext); return T_FLOAT;}
-[0-9]+      {nwords++; yylval.ival = atoi(yytext); return T_INT;}
-{CARAC}     {nwords++; return T_CHAR;}
-{CADENA}    {nwords++; return T_CADENA;}
-";"         {nwords++; return T_PCOMA;}
-"."         {nwords++; return T_PUNTO;}
-","         {nwords++; return T_COMA;}
-"{"         {nwords++; return T_IBRAC;}
-"}"         {nwords++; return T_DBRAC;}
-"||"        {nwords++; return T_OR;}
-"&&"        {nwords++; return T_AND;}
-"!="        {nwords++; return T_DISTINTO;}
-"=="        {nwords++; return T_IGUALQ;}
-"<="        {nwords++; return T_MENORIGUAL;}
-">="        {nwords++; return T_MAYORIGUAL;}
-"="         {nwords++; return T_ASIGN;}
-"<"         {nwords++; return T_MENORQ;}
-">"         {nwords++; return T_MAYORQ;}
-"+"         {nwords++; return T_MAS;}
-"-"         {nwords++; return T_MENOS;}
-"*"         {nwords++; return T_MULTI;}
-"/"         {nwords++; return T_DIVI;}
-"&"         {nwords++; return T_AMP;}
-"("         {nwords++; return T_IPARE;}
-")"         {nwords++; return T_DPARE;}
-"~"         {nwords++; return T_TILDE;}
-"!"         {nwords++; return T_EXCLA;}
-"int"       {nwords++; return T_WINT;}
-"float"     {nwords++; return T_WFLOAT;}
-"char"      {nwords++; return T_WCHAR;}
-"string"    {nwords++; return T_WSTRING;}
-"void"      {nwords++; return T_WVOID;}
-"if"        {nwords++; return T_IF;}
-"else"      {nwords++; return T_ELSE;}
-"while"     {nwords++; return T_WHILE;}
-"true"      {nwords++; return T_TRUE;}
-"false"     {nwords++; return T_FALSE;}
-"function"  {nwords++; return T_FUNC;}
+[0-9]+\.[0-9]+  {yylval.fval = atof(yytext); return T_FLOAT;}
+[0-9]+      {yylval.ival = atoi(yytext); return T_INT;}
+{CARAC}     {return T_CHAR;}
+{CADENA}    {return T_CADENA;}
+";"         {return T_PCOMA;}
+","         {return T_COMA;}
+"{"         {return T_IBRAC;}
+"}"         {return T_DBRAC;}
+"||"        {return T_OR;}
+"&&"        {return T_AND;}
+"!="        {return T_DISTINTO;}
+"=="        {return T_IGUALQ;}
+"<="        {return T_MENORIGUAL;}
+">="        {return T_MAYORIGUAL;}
+"="         {return T_ASIGN;}
+"<"         {return T_MENORQ;}
+">"         {return T_MAYORQ;}
+"+"         {return T_MAS;}
+"-"         {return T_MENOS;}
+"*"         {return T_MULTI;}
+"/"         {return T_DIVI;}
+"("         {return T_IPARE;}
+")"         {return T_DPARE;}
+"int"       {ultimoTipoDato = 1; return T_WINT;}
+"float"     {ultimoTipoDato = 2; return T_WFLOAT;}
+"char"      {ultimoTipoDato = 3; return T_WCHAR;}
+"string"    {ultimoTipoDato = 4; return T_WSTRING;}
+"void"      {return T_WVOID;}
+"if"        {return T_IF;}
+"else"      {return T_ELSE;}
+"while"     {return T_WHILE;}
+"true"      {return T_TRUE;}
+"false"     {return T_FALSE;}
+"print"     {return T_PRINT;}
+"scan"      {return T_SCAN;}
 
-"main"      {nwords++; return T_MAIN;}
-"exit"      {nwords++; return T_QUIT;}
-"quit"      {nwords++; return T_QUIT;}
-
-{ID}        {nwords++; return T_ID;}
-.           {showError(); return T_ERROR;}
+{ID}        {
+                Simbolo *buscado = buscar(&lista, yytext);
+                if(buscado == NULL){
+                    Simbolo simbolo;
+                    strcpy(simbolo.nombre, yytext);
+                    simbolo.flag = ultimoTipoDato;
+                    ultimoTipoDato = -1;
+                    insertar(&lista, &simbolo);
+                }
+                strcpy(yylval.string, yytext);
+                return T_ID;}
+.           {showError();}
 
 %%
 
