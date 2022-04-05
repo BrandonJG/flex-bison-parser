@@ -1,6 +1,6 @@
-float echo;
-if( echo < ){
-    echo = 23;
+int echo;
+if( echo < 32.3 ){
+    echo = 23.2;
 } else {
     echo = 2;
 };

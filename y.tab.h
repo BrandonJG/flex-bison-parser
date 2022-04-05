@@ -131,13 +131,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 17 "sintactico.y"
+#line 24 "sintactico.y"
 
         int ival;
         float fval;
         char cval;
         char string[100];
-        Simbolo simbolo;
+        Simbolo *simbolo;
 
 #line 143 "y.tab.h"
 

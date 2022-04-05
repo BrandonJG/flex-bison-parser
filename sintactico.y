@@ -1,6 +1,7 @@
 %{
 
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include "tabla.h"
 
@@ -10,6 +11,12 @@ extern int yyparse();
 extern FILE* yyin;
 
 void yyerror(const char* s);
+Simbolo *crearInt(int valor);
+Simbolo *crearFloat(float valor);
+Simbolo *crearChar(char valor);
+Simbolo *crearString(char* valor);
+Simbolo *obtenerSimbolo(char* simbolo);
+int sonSimbolosCompatibles(Simbolo* s1, Simbolo* s2);
 %}
 
 %define parse.error verbose
@@ -19,7 +26,7 @@ void yyerror(const char* s);
         float fval;
         char cval;
         char string[100];
-        Simbolo simbolo;
+        Simbolo *simbolo;
 }
 
 %token<ival> T_INT
@@ -33,7 +40,7 @@ void yyerror(const char* s);
 %token T_MAS T_MENOS T_MULTI T_DIVI T_ASIGN
 %token T_WINT T_WFLOAT T_WCHAR T_WSTRING T_WVOID
 %token T_IF T_ELSE T_WHILE T_TRUE T_FALSE T_PRINT T_SCAN T_FUNC
-%token T_ID
+%token<string> T_ID
 
 %left T_COMA
 %right T_ASIGN
@@ -47,6 +54,9 @@ void yyerror(const char* s);
 
 %type<ival> expresion_matematica_simple
 %type<fval> expresion_matematica_compuesta
+%type<simbolo> constante_numerica
+%type<simbolo> constante_literal
+%type<simbolo> termino
 
 %start programa
 
@@ -75,7 +85,22 @@ sentencia
         ;
 
 comparacion
-        : termino operador_relacional termino
+        : termino operador_relacional termino {
+            int tipoDato;
+            if ($1 != NULL && $3 != NULL){
+                tipoDato = sonSimbolosCompatibles($1, $3);
+                switch(tipoDato){
+                    case 1: break;
+                    case 2: break;
+                    case 3: break;
+                    case 4: break;
+                    default:
+                        printf("Comparacion entre tipos de dato no compatibles: ");
+                        printf("%s y %s\n", tipoDeDato($1->flag), tipoDeDato($3->flag));
+                    break;
+                }
+            }
+        }
         ;
 
 condiciones
@@ -146,19 +171,19 @@ tipo_de_dato
         ;
 
 termino
-        : constante_numerica
-        | constante_literal
-        | T_ID
+        : constante_numerica { $$ = $1; }
+        | constante_literal { $$ = $1; }
+        | T_ID { $$ = obtenerSimbolo($1); }
         ;
 
 constante_numerica
-        : expresion_matematica_simple
-        | expresion_matematica_compuesta
+        : expresion_matematica_simple { $$ = crearInt($1); }
+        | expresion_matematica_compuesta { $$ = crearFloat($1); }
         ;
 
 constante_literal
-        : T_CHAR
-        | T_CADENA
+        : T_CHAR { $$ = crearChar($1); }
+        | T_CADENA {$$ = crearString($1); }
         ;        
 
 declaracion_dato
@@ -170,14 +195,23 @@ declaracion_dato
 
 definicion
         : 
-        | T_ID T_ASIGN expresion_matematica_simple
-        | T_ID T_ASIGN expresion_matematica_compuesta
-        | T_ID T_ASIGN constante_literal
-        | T_ID T_ASIGN T_ID;
-        ;
-
-asignacion
-        : T_ID T_ASIGN
+        | T_ID T_ASIGN termino {
+            int tipoDato;
+            Simbolo* termino1 = obtenerSimbolo($1);
+            if (termino1 != NULL && $3 != NULL){
+                tipoDato = sonSimbolosCompatibles(termino1, $3);
+                switch(tipoDato){
+                    case 1: break;
+                    case 2: break;
+                    case 3: break;
+                    case 4: break;
+                    default:
+                        printf("Operacion entre tipos de dato no compatibles: "); 
+                        printf("%s y %s\n", tipoDeDato(termino1->flag), tipoDeDato($3->flag));
+                    break;
+                }
+            } 
+        }
         ;
 
 operador_relacional
@@ -196,9 +230,54 @@ operador_logico
 
 %%
 
+Simbolo *crearInt(int valor){
+        Simbolo *nuevo = (Simbolo*) malloc(sizeof(Simbolo));
+        strcpy(nuevo->nombre, "__int");
+        nuevo->flag = 1;
+        nuevo->ival = valor;
+        return nuevo;
+}
+
+Simbolo *crearFloat(float valor){
+        Simbolo *nuevo = (Simbolo*) malloc(sizeof(Simbolo));
+        strcpy(nuevo->nombre, "__float");
+        nuevo->flag = 2;
+        nuevo->fval = valor;
+        return nuevo;
+}
+
+Simbolo *crearChar(char valor){
+        Simbolo *nuevo = (Simbolo*) malloc(sizeof(Simbolo));
+        strcpy(nuevo->nombre, "__char");
+        nuevo->flag = 3;
+        nuevo->string[0] = valor;
+        return nuevo;
+}
+
+Simbolo *crearString(char* valor){
+        Simbolo *nuevo = (Simbolo*) malloc(sizeof(Simbolo));
+        strcpy(nuevo->nombre, "__string");
+        nuevo->flag = 4;
+        strcpy(nuevo->string, valor);
+        return nuevo;
+}
+
 Simbolo *obtenerSimbolo(char* simbolo){
     Simbolo* buscado = buscar(&lista, simbolo);
     return buscado;
+}
+
+int sonSimbolosCompatibles(Simbolo* izq, Simbolo* der){
+    if(izq->flag == der->flag){
+        return izq->flag;
+    } else {
+        if(izq->flag == 2 && (der->flag == 1 || der->flag == 2)){
+            return 2;
+        } else {
+            return -1;
+        }
+    }
+    return -1;
 }
 
 int main() {
@@ -220,7 +299,7 @@ int main() {
 			fclose(fl);
             printf("\n----------\n");
 			yyparse();
-            printf("Analisis sintactico correcto!\n");
+            printf("Analisis sintactico y semantico correcto!\n");
             imprimirLista(&lista);
         }
         else{

@@ -62,14 +62,21 @@ ID [a-zA-Z][a-zA-Z0-9_]*
                         Simbolo simbolo;
                         strcpy(simbolo.nombre, yytext);
                         simbolo.flag = ultimoTipoDato;
-                        ultimoTipoDato = -1;
                         insertar(&lista, &simbolo);
                         strcpy(yylval.string, yytext);
+                        ultimoTipoDato = -1;
                         return T_ID;
+                    } else {
+                        printf("%s: tiene dos declaraciones. Antes declarada como: %s, ahora como: %s\n",
+                        yytext, tipoDeDato(buscado->flag), tipoDeDato(ultimoTipoDato));
+                        ultimoTipoDato = -1;
                     }
                 } else {
                     if(buscado == NULL){
-                        printf("%s: Variable no declarada.\n", yytext);
+                        printf("%s: Intentando usar variable no declarada.\n", yytext);
+                    } else {
+                        strcpy(yylval.string, yytext);
+                        return T_ID;
                     }
                 }
             }

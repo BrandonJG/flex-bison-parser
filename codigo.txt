@@ -1,4 +1,4 @@
 int abc;
 char abd;
-evcho;
 float num;
+abd = 23;

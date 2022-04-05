@@ -73,8 +73,9 @@ void modificarString(Lista *lista, char *simbolo, char *valor){
 
 void imprimirLista(Lista* lista){
     Nodo *aux = lista->cabeza;
+    printf("\n -- Tabla de Simbolos --\n");
     while(aux!=NULL){
-        printf("%s \n",aux->simbolo.nombre);
+        printf("%s - ",aux->simbolo.nombre);
         switch (aux->simbolo.flag){
         case 1: printf("Entero: %d\n", aux->simbolo.ival);
             break;
@@ -89,4 +90,24 @@ void imprimirLista(Lista* lista){
         }
         aux = aux->siguiente;
     }
+}
+
+char* tipoDeDato(int tipo){
+    switch (tipo)
+    {
+    case 1:
+        return "int";
+        break;
+    case 2:
+        return "float";
+        break;
+    case 3:
+        return "char";
+        break;
+    case 4:
+        return "string";
+        break;
+    default:
+        break;
+    }   
 }
