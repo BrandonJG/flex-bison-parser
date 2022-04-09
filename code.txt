@@ -1,0 +1,3 @@
+int num;
+char caracter;
+float fltante;
