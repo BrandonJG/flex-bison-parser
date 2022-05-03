@@ -16,17 +16,18 @@ Simbolo *crearFloat(float valor);
 Simbolo *crearChar(char valor);
 Simbolo *crearString(char* valor);
 Simbolo *obtenerSimbolo(char* simbolo);
+
 int sonSimbolosCompatibles(Simbolo* s1, Simbolo* s2);
 %}
 
 %define parse.error verbose
 
 %union {
-        int ival;
-        float fval;
-        char cval;
-        char string[100];
-        Simbolo *simbolo;
+    int ival;
+    float fval;
+    char cval;
+    char string[100];
+    Simbolo *simbolo;
 }
 
 %token<ival> T_INT
@@ -40,6 +41,7 @@ int sonSimbolosCompatibles(Simbolo* s1, Simbolo* s2);
 %token T_MAS T_MENOS T_MULTI T_DIVI T_ASIGN
 %token T_WINT T_WFLOAT T_WCHAR T_WSTRING T_WVOID
 %token T_IF T_ELSE T_WHILE T_TRUE T_FALSE T_PRINT T_SCAN T_FUNC
+%token T_LOG T_LN T_POW T_RAIZ T_SENO T_COS T_TAN
 %token<string> T_ID
 
 %left T_COMA
@@ -57,209 +59,221 @@ int sonSimbolosCompatibles(Simbolo* s1, Simbolo* s2);
 %type<simbolo> constante_numerica
 %type<simbolo> constante_literal
 %type<simbolo> termino
+//%type<simbolo> calculadora
 
 %start programa
 
 %%
 
 programa
-        : sentencias
-        ;
+    : sentencias
+    ;
 
 bloque
-        : T_IBRAC sentencias T_DBRAC
-        ;
+    : T_IBRAC sentencias T_DBRAC
+    ;
 
 sentencias
-        : 
-        | sentencia T_PCOMA sentencias
-        ;
+    : 
+    | sentencia T_PCOMA sentencias
+    ;
 
 sentencia
-        : declaracion_dato
-        | definicion
-        | expresion_condicional
-        | ciclo
-        | entrada_dato
-        | salida_dato
-        ;
+    : declaracion_dato
+    | definicion
+    | expresion_condicional
+    | ciclo
+    | entrada_dato
+    | salida_dato
+    | calculadora
+    ;
 
 comparacion
-        : termino operador_relacional termino {
-            int tipoDato;
-            if ($1 != NULL && $3 != NULL){
-                tipoDato = sonSimbolosCompatibles($1, $3);
-                switch(tipoDato){
-                    case 1: break;
-                    case 2: break;
-                    case 3: break;
-                    case 4: break;
-                    default:
-                        printf("Comparacion entre tipos de dato no compatibles: ");
-                        printf("%s y %s\n", tipoDeDato($1->flag), tipoDeDato($3->flag));
-                    break;
-                }
+    : termino operador_relacional termino {
+        int tipoDato;
+        if ($1 != NULL && $3 != NULL){
+            tipoDato = sonSimbolosCompatibles($1, $3);
+            switch(tipoDato){
+                case 1: break;
+                case 2: break;
+                case 3: break;
+                case 4: break;
+                default:
+                    printf("Comparacion entre tipos de dato no compatibles: ");
+                    printf("%s y %s\n", tipoDeDato($1->flag), tipoDeDato($3->flag));
+                break;
             }
         }
-        ;
+    }
+    ;
 
 condiciones
-        :  condicion 
-        |  condicion operador_logico condicion 
-        ;
+    :  condicion 
+    |  condicion operador_logico condicion 
+    ;
 
 condicion
-        : T_TRUE
-        | T_FALSE
-        | comparacion
-        ;
+    : T_TRUE
+    | T_FALSE
+    | comparacion
+    ;
 
 ciclo
-        : T_WHILE condiciones bloque
-        ;
+    : T_WHILE condiciones bloque
+    ;
 
 expresion_condicional
-        : T_IF T_IPARE condiciones T_DPARE bloque
-        | T_IF T_IPARE condiciones T_DPARE bloque condicional_extendida
-        ;
+    : T_IF T_IPARE condiciones T_DPARE bloque
+    | T_IF T_IPARE condiciones T_DPARE bloque condicional_extendida
+    ;
 
 condicional_extendida
-        : T_ELSE bloque
-        | T_ELSE T_IF condicion bloque condicional_extendida
-        ;
+    : T_ELSE bloque
+    | T_ELSE T_IF condicion bloque condicional_extendida
+    ;
 
 entrada_dato
-        : T_SCAN T_IPARE tipo_de_dato T_COMA T_ID T_DPARE
-        ;
+    : T_SCAN T_IPARE tipo_de_dato T_COMA T_ID T_DPARE
+    ;
 
 salida_dato
-        : T_PRINT T_IPARE tipo_de_dato T_COMA T_ID T_DPARE
-        ;
+    : T_PRINT T_IPARE tipo_de_dato T_COMA T_ID T_DPARE
+    ;
+
+calculadora
+    : T_LN T_IPARE termino T_COMA termino T_DPARE
+    | T_LOG T_IPARE termino T_COMA termino T_DPARE
+    | T_POW T_IPARE termino T_COMA termino T_DPARE
+    | T_RAIZ T_IPARE termino T_COMA termino T_DPARE
+    | T_SENO T_IPARE termino T_COMA termino T_DPARE
+    | T_COS T_IPARE termino T_COMA termino T_DPARE
+    | T_TAN T_IPARE termino T_COMA termino T_DPARE
+;
 
 expresion_matematica_compuesta
-        : T_FLOAT { $$ = $1; }
-        | expresion_matematica_compuesta T_MAS expresion_matematica_compuesta { $$ = $1 + $3; }
-        | expresion_matematica_compuesta T_MENOS expresion_matematica_compuesta { $$ = $1 - $3; }
-        | expresion_matematica_compuesta T_MULTI expresion_matematica_compuesta { $$ = $1 * $3; }
-        | expresion_matematica_compuesta T_DIVI expresion_matematica_compuesta { $$ = $1 / $3; }
-        | T_IPARE expresion_matematica_compuesta T_DPARE { $$ = $2; }
-        | expresion_matematica_simple T_MAS expresion_matematica_compuesta { $$ = $1 + $3; }
-        | expresion_matematica_simple T_MENOS expresion_matematica_compuesta { $$ = $1 - $3; }
-        | expresion_matematica_simple T_MULTI expresion_matematica_compuesta { $$ = $1 * $3; }
-        | expresion_matematica_simple T_DIVI expresion_matematica_compuesta { $$ = $1 / $3; }
-        | expresion_matematica_compuesta T_MAS expresion_matematica_simple { $$ = $1 + $3; }
-        | expresion_matematica_compuesta T_MENOS expresion_matematica_simple { $$ = $1 - $3; }
-        | expresion_matematica_compuesta T_MULTI expresion_matematica_simple { $$ = $1 * $3; }
-        | expresion_matematica_compuesta T_DIVI expresion_matematica_simple { $$ = $1 / $3; }
-        | expresion_matematica_simple T_DIVI expresion_matematica_simple { $$ = $1 / (float)$3; }
-        ; 
+    : T_FLOAT { $$ = $1; }
+    | expresion_matematica_compuesta T_MAS expresion_matematica_compuesta { $$ = $1 + $3; }
+    | expresion_matematica_compuesta T_MENOS expresion_matematica_compuesta { $$ = $1 - $3; }
+    | expresion_matematica_compuesta T_MULTI expresion_matematica_compuesta { $$ = $1 * $3; }
+    | expresion_matematica_compuesta T_DIVI expresion_matematica_compuesta { $$ = $1 / $3; }
+    | T_IPARE expresion_matematica_compuesta T_DPARE { $$ = $2; }
+    | expresion_matematica_simple T_MAS expresion_matematica_compuesta { $$ = $1 + $3; }
+    | expresion_matematica_simple T_MENOS expresion_matematica_compuesta { $$ = $1 - $3; }
+    | expresion_matematica_simple T_MULTI expresion_matematica_compuesta { $$ = $1 * $3; }
+    | expresion_matematica_simple T_DIVI expresion_matematica_compuesta { $$ = $1 / $3; }
+    | expresion_matematica_compuesta T_MAS expresion_matematica_simple { $$ = $1 + $3; }
+    | expresion_matematica_compuesta T_MENOS expresion_matematica_simple { $$ = $1 - $3; }
+    | expresion_matematica_compuesta T_MULTI expresion_matematica_simple { $$ = $1 * $3; }
+    | expresion_matematica_compuesta T_DIVI expresion_matematica_simple { $$ = $1 / $3; }
+    | expresion_matematica_simple T_DIVI expresion_matematica_simple { $$ = $1 / (float)$3; }
+    ; 
 
 
 expresion_matematica_simple
-        : T_INT { $$ = $1; }
-        | expresion_matematica_simple T_MAS expresion_matematica_simple { $$ = $1 + $3; }
-        | expresion_matematica_simple T_MENOS expresion_matematica_simple { $$ = $1 - $3; }
-        | expresion_matematica_simple T_MULTI expresion_matematica_simple { $$ = $1 * $3; }
-        | T_IPARE expresion_matematica_simple T_DPARE { $$ = $2; }
-        ;
+    : T_INT { $$ = $1; }
+    | expresion_matematica_simple T_MAS expresion_matematica_simple { $$ = $1 + $3; }
+    | expresion_matematica_simple T_MENOS expresion_matematica_simple { $$ = $1 - $3; }
+    | expresion_matematica_simple T_MULTI expresion_matematica_simple { $$ = $1 * $3; }
+    | T_IPARE expresion_matematica_simple T_DPARE { $$ = $2; }
+    ;
 
 tipo_de_dato
-        : T_WINT
-        | T_WFLOAT
-        | T_WCHAR
-        | T_WSTRING
-        ;
+    : T_WINT
+    | T_WFLOAT
+    | T_WCHAR
+    | T_WSTRING
+    ;
 
 termino
-        : constante_numerica { $$ = $1; }
-        | constante_literal { $$ = $1; }
-        | T_ID { $$ = obtenerSimbolo($1); }
-        ;
+    : constante_numerica { $$ = $1; }
+    | constante_literal { $$ = $1; }
+    | T_ID { $$ = obtenerSimbolo($1); }
+    ;
 
 constante_numerica
-        : expresion_matematica_simple { $$ = crearInt($1); }
-        | expresion_matematica_compuesta { $$ = crearFloat($1); }
-        ;
+    : expresion_matematica_simple { $$ = crearInt($1); }
+    | expresion_matematica_compuesta { $$ = crearFloat($1); }
+    ;
 
 constante_literal
-        : T_CHAR { $$ = crearChar($1); }
-        | T_CADENA {$$ = crearString($1); }
-        ;        
+    : T_CHAR { $$ = crearChar($1); }
+    | T_CADENA {$$ = crearString($1); }
+    ;        
 
 declaracion_dato
-        : T_WINT T_ID
-        | T_WFLOAT T_ID
-        | T_WCHAR T_ID
-        | T_WSTRING T_ID
-        ;
+    : T_WINT T_ID
+    | T_WFLOAT T_ID
+    | T_WCHAR T_ID
+    | T_WSTRING T_ID
+    ;
 
 definicion
-        : 
-        | T_ID T_ASIGN termino {
-            int tipoDato;
-            Simbolo* termino1 = obtenerSimbolo($1);
-            if (termino1 != NULL && $3 != NULL){
-                tipoDato = sonSimbolosCompatibles(termino1, $3);
-                switch(tipoDato){
-                    case 1: break;
-                    case 2: break;
-                    case 3: break;
-                    case 4: break;
-                    default:
-                        printf("Operacion entre tipos de dato no compatibles: "); 
-                        printf("%s y %s\n", tipoDeDato(termino1->flag), tipoDeDato($3->flag));
-                    break;
-                }
-            } 
-        }
-        ;
+    : 
+    | T_ID T_ASIGN termino {
+        int tipoDato;
+        Simbolo* termino1 = obtenerSimbolo($1);
+        if (termino1 != NULL && $3 != NULL){
+            tipoDato = sonSimbolosCompatibles(termino1, $3);
+            switch(tipoDato){
+                case 1: break;
+                case 2: break;
+                case 3: break;
+                case 4: break;
+                default:
+                    printf("Operacion entre tipos de dato no compatibles: "); 
+                    printf("%s y %s\n", tipoDeDato(termino1->flag), tipoDeDato($3->flag));
+                break;
+            }
+        } 
+    }
+    ;
 
 operador_relacional
-        : T_MENORQ
-        | T_MAYORQ
-        | T_IGUALQ
-        | T_MENORIGUAL
-        | T_MAYORIGUAL
-        | T_DISTINTO
-        ;
+    : T_MENORQ
+    | T_MAYORQ
+    | T_IGUALQ
+    | T_MENORIGUAL
+    | T_MAYORIGUAL
+    | T_DISTINTO
+    ;
 
 operador_logico
-        : T_AND
-        | T_OR
-        ;
+    : T_AND
+    | T_OR
+    ;
 
 %%
 
 Simbolo *crearInt(int valor){
-        Simbolo *nuevo = (Simbolo*) malloc(sizeof(Simbolo));
-        strcpy(nuevo->nombre, "__int");
-        nuevo->flag = 1;
-        nuevo->ival = valor;
-        return nuevo;
+    Simbolo *nuevo = (Simbolo*) malloc(sizeof(Simbolo));
+    strcpy(nuevo->nombre, "__int");
+    nuevo->flag = 1;
+    nuevo->ival = valor;
+    return nuevo;
 }
 
 Simbolo *crearFloat(float valor){
-        Simbolo *nuevo = (Simbolo*) malloc(sizeof(Simbolo));
-        strcpy(nuevo->nombre, "__float");
-        nuevo->flag = 2;
-        nuevo->fval = valor;
-        return nuevo;
+    Simbolo *nuevo = (Simbolo*) malloc(sizeof(Simbolo));
+    strcpy(nuevo->nombre, "__float");
+    nuevo->flag = 2;
+    nuevo->fval = valor;
+    return nuevo;
 }
 
 Simbolo *crearChar(char valor){
-        Simbolo *nuevo = (Simbolo*) malloc(sizeof(Simbolo));
-        strcpy(nuevo->nombre, "__char");
-        nuevo->flag = 3;
-        nuevo->string[0] = valor;
-        return nuevo;
+    Simbolo *nuevo = (Simbolo*) malloc(sizeof(Simbolo));
+    strcpy(nuevo->nombre, "__char");
+    nuevo->flag = 3;
+    nuevo->string[0] = valor;
+    return nuevo;
 }
 
 Simbolo *crearString(char* valor){
-        Simbolo *nuevo = (Simbolo*) malloc(sizeof(Simbolo));
-        strcpy(nuevo->nombre, "__string");
-        nuevo->flag = 4;
-        strcpy(nuevo->string, valor);
-        return nuevo;
+    Simbolo *nuevo = (Simbolo*) malloc(sizeof(Simbolo));
+    strcpy(nuevo->nombre, "__string");
+    nuevo->flag = 4;
+    strcpy(nuevo->string, valor);
+    return nuevo;
 }
 
 Simbolo *obtenerSimbolo(char* simbolo){

@@ -54,6 +54,13 @@ ID [a-zA-Z][a-zA-Z0-9_]*
 "false"     {return T_FALSE;}
 "print"     {return T_PRINT;}
 "scan"      {return T_SCAN;}
+"log"       {return T_LOG;}
+"ln"        {return T_LN;}
+"potencia"  {return T_POW;}
+"raiz"      {return T_RAIZ;}
+"seno"      {return T_SENO;}
+"cos"       {return T_COS;}
+"tan"       {return T_TAN;}
 
 {ID}        {
                 Simbolo *buscado = buscar(&lista, yytext);
@@ -70,10 +77,12 @@ ID [a-zA-Z][a-zA-Z0-9_]*
                         printf("%s: tiene dos declaraciones. Antes declarada como: %s, ahora como: %s\n",
                         yytext, tipoDeDato(buscado->flag), tipoDeDato(ultimoTipoDato));
                         ultimoTipoDato = -1;
+                        return T_ID;
                     }
                 } else {
                     if(buscado == NULL){
                         printf("%s: Intentando usar variable no declarada.\n", yytext);
+                        return T_ID;
                     } else {
                         strcpy(yylval.string, yytext);
                         return T_ID;
