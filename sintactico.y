@@ -41,7 +41,7 @@ int sonSimbolosCompatibles(Simbolo* s1, Simbolo* s2);
 %token T_MAS T_MENOS T_MULTI T_DIVI T_ASIGN
 %token T_WINT T_WFLOAT T_WCHAR T_WSTRING T_WVOID
 %token T_IF T_ELSE T_WHILE T_TRUE T_FALSE T_PRINT T_SCAN T_FUNC
-%token T_LOG T_LN T_POW T_RAIZ T_SENO T_COS T_TAN
+%token T_SQUARE T_RAIZ T_SENO T_COS T_TAN
 %token<string> T_ID
 
 %left T_COMA
@@ -59,7 +59,8 @@ int sonSimbolosCompatibles(Simbolo* s1, Simbolo* s2);
 %type<simbolo> constante_numerica
 %type<simbolo> constante_literal
 %type<simbolo> termino
-//%type<simbolo> calculadora
+%type<ival> operador_relacional
+%type<simbolo> calculadora
 
 %start programa
 
@@ -94,10 +95,7 @@ comparacion
         if ($1 != NULL && $3 != NULL){
             tipoDato = sonSimbolosCompatibles($1, $3);
             switch(tipoDato){
-                case 1: break;
-                case 2: break;
-                case 3: break;
-                case 4: break;
+                case 1: case 2: case 3: case 4: break;
                 default:
                     printf("Comparacion entre tipos de dato no compatibles: ");
                     printf("%s y %s\n", tipoDeDato($1->flag), tipoDeDato($3->flag));
@@ -141,39 +139,192 @@ salida_dato
     ;
 
 calculadora
-    : T_LN T_IPARE termino T_COMA termino T_DPARE
-    | T_LOG T_IPARE termino T_COMA termino T_DPARE
-    | T_POW T_IPARE termino T_COMA termino T_DPARE
-    | T_RAIZ T_IPARE termino T_COMA termino T_DPARE
-    | T_SENO T_IPARE termino T_COMA termino T_DPARE
-    | T_COS T_IPARE termino T_COMA termino T_DPARE
-    | T_TAN T_IPARE termino T_COMA termino T_DPARE
+    : T_SQUARE T_IPARE termino T_DPARE
+    {
+        float a1;
+        //obtener valor mediante funcion
+            a1 = $3;
+            asm volatile (
+                "fld %1;"
+                "fadd;"
+                "fstp %0;" : "=m" (res) : "m" (a1) );
+            $$ = res;
+    }
+    | T_RAIZ T_IPARE termino T_DPARE
+    | T_SENO T_IPARE termino T_DPARE
+    | T_COS T_IPARE termino T_DPARE
+    | T_TAN T_IPARE termino T_DPARE
 ;
 
 expresion_matematica_compuesta
-    : T_FLOAT { $$ = $1; }
-    | expresion_matematica_compuesta T_MAS expresion_matematica_compuesta { $$ = $1 + $3; }
-    | expresion_matematica_compuesta T_MENOS expresion_matematica_compuesta { $$ = $1 - $3; }
-    | expresion_matematica_compuesta T_MULTI expresion_matematica_compuesta { $$ = $1 * $3; }
-    | expresion_matematica_compuesta T_DIVI expresion_matematica_compuesta { $$ = $1 / $3; }
+    : T_FLOAT { $$ = $1; } 
+    | expresion_matematica_compuesta T_MAS expresion_matematica_compuesta
+        {
+            float a1, a2, res;
+            a1 = $1;
+            a2 = $3;
+            asm volatile (
+                "fld %1;"
+                "fld %2;"
+                "fadd;"
+                "fstp %0;" : "=m" (res) : "m" (a1), "m" (a2) );
+            $$ = res;
+        }
+    | expresion_matematica_compuesta T_MENOS expresion_matematica_compuesta
+        {
+            float a1, a2, res;
+            a1 = $1;
+            a2 = $3;
+            asm volatile (
+                "fld %1;"
+                "fld %2;"
+                "fsub;"
+                "fstp %0;" : "=m" (res) : "m" (a1), "m" (a2) );
+            $$ = res;
+        }
+    | expresion_matematica_compuesta T_MULTI expresion_matematica_compuesta
+        {
+            float a1, a2, res;
+            a1 = $1;
+            a2 = $3;
+            asm volatile (
+                "fld %1;"
+                "fld %2;"
+                "fmul;"
+                "fstp %0;" : "=m" (res) : "m" (a1), "m" (a2) );
+            $$ = res;
+        }
+    | expresion_matematica_compuesta T_DIVI expresion_matematica_compuesta
+        {
+            float a1, a2, res;
+            a1 = $1;
+            a2 = $3;
+            asm volatile (
+                "fld %1;"
+                "fld %2;"
+                "fdiv;"
+                "fstp %0;" : "=m" (res) : "m" (a1), "m" (a2) );
+            $$ = res;
+        }
     | T_IPARE expresion_matematica_compuesta T_DPARE { $$ = $2; }
-    | expresion_matematica_simple T_MAS expresion_matematica_compuesta { $$ = $1 + $3; }
-    | expresion_matematica_simple T_MENOS expresion_matematica_compuesta { $$ = $1 - $3; }
-    | expresion_matematica_simple T_MULTI expresion_matematica_compuesta { $$ = $1 * $3; }
-    | expresion_matematica_simple T_DIVI expresion_matematica_compuesta { $$ = $1 / $3; }
-    | expresion_matematica_compuesta T_MAS expresion_matematica_simple { $$ = $1 + $3; }
-    | expresion_matematica_compuesta T_MENOS expresion_matematica_simple { $$ = $1 - $3; }
-    | expresion_matematica_compuesta T_MULTI expresion_matematica_simple { $$ = $1 * $3; }
-    | expresion_matematica_compuesta T_DIVI expresion_matematica_simple { $$ = $1 / $3; }
-    | expresion_matematica_simple T_DIVI expresion_matematica_simple { $$ = $1 / (float)$3; }
+    | expresion_matematica_simple T_MAS expresion_matematica_compuesta
+        {
+            float a1, a2, res;
+            a1 = $1;
+            a2 = $3;
+            asm volatile (
+                "fld %1;"
+                "fld %2;"
+                "fadd;"
+                "fstp %0;" : "=m" (res) : "m" (a1), "m" (a2) );
+            $$ = res;
+        }
+    | expresion_matematica_simple T_MENOS expresion_matematica_compuesta
+        {
+            float a1, a2, res;
+            a1 = $1;
+            a2 = $3;
+            asm volatile (
+                "fld %1;"
+                "fld %2;"
+                "fsub;"
+                "fstp %0;" : "=m" (res) : "m" (a1), "m" (a2) );
+            $$ = res;
+        }
+    | expresion_matematica_simple T_MULTI expresion_matematica_compuesta
+        {
+            float a1, a2, res;
+            a1 = $1;
+            a2 = $3;
+            asm volatile (
+                "fld %1;"
+                "fld %2;"
+                "fmul;"
+                "fstp %0;" : "=m" (res) : "m" (a1), "m" (a2) );
+            $$ = res;
+        }
+    | expresion_matematica_simple T_DIVI expresion_matematica_compuesta
+        {
+            float a1, a2, res;
+            a1 = $1;
+            a2 = $3;
+            asm volatile (
+                "fld %1;"
+                "fld %2;"
+                "fdiv;"
+                "fstp %0;" : "=m" (res) : "m" (a1), "m" (a2) );
+            $$ = res;
+        }
+    | expresion_matematica_compuesta T_MAS expresion_matematica_simple
+        {
+            float a1, a2, res;
+            a1 = $1;
+            a2 = $3;
+            asm volatile (
+                "fld %1;"
+                "fld %2;"
+                "fadd;"
+                "fstp %0;" : "=m" (res) : "m" (a1), "m" (a2) );
+            $$ = res;
+        }
+    | expresion_matematica_compuesta T_MENOS expresion_matematica_simple
+        {
+            float a1, a2, res;
+            a1 = $1;
+            a2 = $3;
+            asm volatile (
+                "fld %1;"
+                "fld %2;"
+                "fsub;"
+                "fstp %0;" : "=m" (res) : "m" (a1), "m" (a2) );
+            $$ = res;
+        }
+    | expresion_matematica_compuesta T_MULTI expresion_matematica_simple
+        {
+            float a1, a2, res;
+            a1 = $1;
+            a2 = $3;
+            asm volatile (
+                "fld %1;"
+                "fld %2;"
+                "fmul;"
+                "fstp %0;" : "=m" (res) : "m" (a1), "m" (a2) );
+            $$ = res;
+        }
+    | expresion_matematica_compuesta T_DIVI expresion_matematica_simple
+        {
+            float a1, a2, res;
+            a1 = $1;
+            a2 = $3;
+            asm volatile (
+                "fld %1;"
+                "fld %2;"
+                "fdiv;"
+                "fstp %0;" : "=m" (res) : "m" (a1), "m" (a2) );
+            $$ = res;
+        }
+    | expresion_matematica_simple T_DIVI expresion_matematica_simple
+        { 
+            float a1, a2, res;
+            a1 = $1;
+            a2 = $3;
+            asm volatile (
+                "fld %1;"
+                "fld %2;"
+                "fdiv;"
+                "fstp %0;" : "=m" (res) : "m" (a1), "m" (a2) );
+            $$ = res;}
     ; 
 
 
 expresion_matematica_simple
     : T_INT { $$ = $1; }
-    | expresion_matematica_simple T_MAS expresion_matematica_simple { $$ = $1 + $3; }
-    | expresion_matematica_simple T_MENOS expresion_matematica_simple { $$ = $1 - $3; }
-    | expresion_matematica_simple T_MULTI expresion_matematica_simple { $$ = $1 * $3; }
+    | expresion_matematica_simple T_MAS expresion_matematica_simple
+        { asm volatile ("addl %%ebx, %%eax;" : "=a" ($$) : "a" ($1) , "b" ($3)); }
+    | expresion_matematica_simple T_MENOS expresion_matematica_simple
+        { asm volatile ("subl %%ebx, %%eax;" : "=a" ($$) : "a" ($1) , "b" ($3)); }
+    | expresion_matematica_simple T_MULTI expresion_matematica_simple
+        { asm volatile ("imull %%ebx, %%eax;" : "=a" ($$) : "a" ($1) , "b" ($3)); }
     | T_IPARE expresion_matematica_simple T_DPARE { $$ = $2; }
     ;
 
@@ -229,12 +380,12 @@ definicion
     ;
 
 operador_relacional
-    : T_MENORQ
-    | T_MAYORQ
-    | T_IGUALQ
-    | T_MENORIGUAL
-    | T_MAYORIGUAL
-    | T_DISTINTO
+    : T_IGUALQ { $$ = 0; }
+    | T_MENORIGUAL { $$ = 1; }
+    | T_MAYORIGUAL { $$ = 2; }
+    | T_MENORQ { $$ = 3; }
+    | T_MAYORQ { $$ = 4; }
+    | T_DISTINTO { $$ = 5; }
     ;
 
 operador_logico
@@ -243,6 +394,8 @@ operador_logico
     ;
 
 %%
+
+
 
 Simbolo *crearInt(int valor){
     Simbolo *nuevo = (Simbolo*) malloc(sizeof(Simbolo));

@@ -54,9 +54,7 @@ ID [a-zA-Z][a-zA-Z0-9_]*
 "false"     {return T_FALSE;}
 "print"     {return T_PRINT;}
 "scan"      {return T_SCAN;}
-"log"       {return T_LOG;}
-"ln"        {return T_LN;}
-"potencia"  {return T_POW;}
+"cuadrado"  {return T_SQUARE;}
 "raiz"      {return T_RAIZ;}
 "seno"      {return T_SENO;}
 "cos"       {return T_COS;}
