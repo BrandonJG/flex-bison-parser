@@ -44,4 +44,6 @@ void modificarString(Lista *lista, char *simbolo, char *valor);
 
 void imprimirLista(Lista* lista);
 
+char* tipoDeDato(int tipo);
+
 #endif
