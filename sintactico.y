@@ -190,6 +190,38 @@ entrada_dato
 
 salida_dato
     : T_PRINT T_IPARE tipo_de_dato T_COMA T_ID T_DPARE
+    {
+        int in;
+        float fl;
+        char ch;
+        char st[100];
+        Simbolo* termino1 = obtenerSimbolo($5);
+        if (termino1 != NULL){
+            if(termino1->flag == $3){
+                printf("%s: ", termino1->nombre);
+                switch($3){
+                    case 1:
+                        printf("%d \n", termino1->ival);
+                        break;
+                    case 2:
+                        printf("%f \n", termino1->fval);
+                        break;
+                    case 3:
+                        printf("%c \n", termino1->string[0]);
+                        break;
+                    break;
+                        printf("%s \n", termino1->string);
+                        break;
+                    case 4:
+                    break;
+                }
+            } else {
+                printf("Tipos de dato no compatible\n");
+            }
+        } else {
+            printf("Variable no encotrada: %s\n", $5);
+        }
+    }
     ;
 
 calculadora
@@ -214,7 +246,7 @@ calculadora
                 "fld %2;"
                 "fmul;"
                 "fstp %0;" : "=m" (res) : "m" (a1), "m" (a2));
-            printf("square: %f\n", res);
+            printf("cuadrado: %f\n", res);
             $$ = crearFloat(res);
         } else {
             printf("Tipo de dato no compatible\n");
@@ -239,6 +271,7 @@ calculadora
                 "fld %1;"
                 "fsqrt;"
                 "fstp %0;" : "=m" (res) : "m" (a1));
+            printf("raiz: %f\n", res);
             $$ = crearFloat(res);
         } else {
             printf("Tipo de dato no compatible\n");
@@ -263,6 +296,7 @@ calculadora
                 "fld %1;"
                 "fsin;"
                 "fstp %0;" : "=m" (res) : "m" (a1));
+            printf("seno: %f\n", res);
             $$ = crearFloat(res);
         } else {
             printf("Tipo de dato no compatible\n");
@@ -287,6 +321,7 @@ calculadora
                 "fld %1;"
                 "fcos;"
                 "fstp %0;" : "=m" (res) : "m" (a1));
+            printf("coseno: %f\n", res);
             $$ = crearFloat(res);
         } else {
             printf("Tipo de dato no compatible\n");
@@ -311,6 +346,7 @@ calculadora
                 "fld %1;"
                 "fptan;"
                 "fstp %0;" : "=m" (res) : "m" (a1));
+            printf("tangente parcial: %f\n", res);
             $$ = crearFloat(res);
         } else {
             printf("Tipo de dato no compatible\n");
